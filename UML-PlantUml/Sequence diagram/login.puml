@@ -1,0 +1,20 @@
+@startuml login
+
+actor Client
+boundary LoginController
+control GenerateJWT
+database DB
+
+Client -> LoginController : Sets request body with email and password
+LoginController -> DB : Check email
+DB -> LoginController : Email exists?
+LoginController --> Client : Email not found
+LoginController -> DB : Check password
+DB -> LoginController : Password correct?
+LoginController --> Client : Invalid password
+
+LoginController -> GenerateJWT : Request JWT
+GenerateJWT --> LoginController : Return JWT
+LoginController -> Client : Send JWT
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml usecase
+
+actor Client
+
+usecase "View BileMo Products" as UC2
+usecase "View BileMo Product Details" as UC3
+usecase "View Users List (related to the client ONLY)" as UC4
+usecase "View User Details (related to the client ONLY)" as UC5
+usecase "Add New User (related to the client ONLY)" as UC6
+usecase "Delete User (related to the client ONLY)" as UC7
+usecase "Login-Check" as UC8
+
+Client -> UC8
+UC8 -> UC2
+UC8 -> UC3
+UC8 -> UC4
+UC8 -> UC5
+UC8 -> UC6
+UC8 -> UC7
+
+'ORGANIZE_USECASE_GRID'
+Client -[#white,dotted]-> UC2
+UC2 -[#white,dotted]-> UC3
+UC3 -[#white,dotted]-> UC4
+UC4 -[#white,dotted]-> UC5
+UC5 -[#white,dotted]-> UC6
+UC6 -[#white,dotted]-> UC7
+UC7 -[#white,dotted]-> UC8
+
+@enduml
+

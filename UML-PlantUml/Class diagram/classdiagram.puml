@@ -1,0 +1,33 @@
+@startuml class_diagram
+
+class Client {
+  id: int
+  name: string
+  email: string
+  +create(name: string, email: string): void
+  +update(id: int, name: string, email: string): void
+  +delete(id: int): void
+}
+
+class User {
+  id: int
+  username: string
+  email: string
+  password: string
+  client: Client
+  +create(username: string, email: string, password: string, client: Client): void
+  +update(id: int, username: string, email: string, password: string, client: Client): void
+  +delete(id: int): void
+}
+
+class Phone {
+  id: int
+  name: string
+  model: string
+  brand: string
+  +create(name: string, model: string, brand: string): void
+  +update(id: int, name: string, model: string, brand: string): void
+  +delete(id: int): void
+}
+
+@enduml

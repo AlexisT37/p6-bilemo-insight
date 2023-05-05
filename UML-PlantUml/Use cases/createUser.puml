@@ -1,0 +1,21 @@
+@startuml createTrick
+
+actor Client
+actor Database
+
+usecase FillOutUserInfo as "Fill out user information"
+usecase CheckUserName as "Check if user name exists"
+usecase SetAttributes as "Set attributes\nand create entry"
+usecase DisplayValidation as "Display validation message \n or error mesage"
+
+
+Client --> FillOutUserInfo
+FillOutUserInfo --> CheckUserName : Controller
+'check user name to database
+CheckUserName --> Database: Controller
+CheckUserName --> SetAttributes : Controller
+SetAttributes --> Database: Controller
+Database --> DisplayValidation: Controller
+DisplayValidation --> Client: Controller
+
+@enduml

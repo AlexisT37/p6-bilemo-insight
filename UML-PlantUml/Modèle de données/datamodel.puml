@@ -1,0 +1,38 @@
+@startuml datamodel
+
+!define table(name,desc) class name as "desc"
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) #x
+
+table(Client, "Client") {
+  primary_key(id): int
+  name: string
+  email: string
+}
+
+table(Phone, "Phone") {
+  primary_key(id): int
+  name: string
+  model: string
+  brand: string
+}
+
+table(User, "User") {
+  primary_key(id): int
+  username: string
+  email: string
+  password: string
+  foreign_key(client_id): Client
+}
+
+table(ClientPhone, "ClientPhone") {
+  primary_key(id): int
+  foreign_key(client_id): Client
+  foreign_key(phone_id): Phone
+}
+
+Client "1" -- "many" User : client_id
+Client "many" -- "many" Phone : client_id - phone_id << (ClientPhone) >>
+
+
+@enduml

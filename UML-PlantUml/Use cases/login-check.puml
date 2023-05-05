@@ -1,0 +1,24 @@
+@startuml login-check
+
+actor Client
+
+usecase Login
+usecase GenerateJWT
+
+Client -> Login: Sets request body with email and password
+
+Login -> Database: Check if email already exists in database
+
+Database -> Login: Send error if email doesn't exist
+
+Login -> Database: Check if password matches password in database
+
+Database -> Login: Send error if passwords don't match
+
+Login -> GenerateJWT: Request JWT \n \n
+
+GenerateJWT -> Login: Return JWT
+
+Login -> Client: Send JWT
+
+@enduml

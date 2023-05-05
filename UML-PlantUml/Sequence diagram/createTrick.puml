@@ -1,0 +1,24 @@
+@startuml createTrick
+
+actor Client
+boundary TrickController
+control CreateUser
+database Database
+
+Client -> TrickController : Fill out user information
+TrickController -> CreateUser : Check if user name exists
+CreateUser -> Database : Check user name
+Database -> CreateUser : Return user name status
+CreateUser --> TrickController : User name exists or not
+
+alt User name exists
+    TrickController -> Client : Display error message
+else User name does not exist
+    TrickController -> CreateUser : Set attributes and create entry
+    CreateUser -> Database : Create entry
+    Database -> CreateUser : Entry created
+    CreateUser -> TrickController : Entry creation status
+    TrickController -> Client : Display validation message
+end
+
+@enduml
