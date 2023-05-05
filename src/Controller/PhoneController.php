@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Serializer\SerializerInterface;
 use App\Repository\PhoneRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,18 +23,13 @@ class PhoneController extends AbstractController
 
     // Function to return all phones in the database with a JSON response
     #[Route('/phone', name: 'app_phone', methods: ['GET'])]
-    public function getPhones(Request $request, PhoneRepository $phoneRepository): JsonResponse
+    public function getPhones(Request $request, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
-        $phones = $phoneRepository->findAllWithPagination(3, 5);
-        $data = [];
-        foreach ($phones as $phone) {
-            $data[] = [
-                'id' => $phone->getId(),
-                'name' => $phone->getName(),
-                'quantity' => $phone->getQuantity(),
-            ];
-        }
+        $phones = $phoneRepository->findAllWithPagination(2, 5);
+        // $phones = $phoneRepository->findAll();
 
-        return new JsonResponse($data, Response::HTTP_OK, [], true);
+        $jsonPhones = $serializer->serialize($phones, 'json');
+
+        return new JsonResponse($jsonPhones, Response::HTTP_OK, [], true);
     }
 }
