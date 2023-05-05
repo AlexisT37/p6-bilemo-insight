@@ -2,15 +2,22 @@
 
 namespace App\DataFixtures;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
+use App\Entity\Phone;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\Fixture;
 
 class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // $product = new Product();
-        // $manager->persist($product);
+        //creates 10 phones with random data according to the Phone entity
+        for ($i = 0; $i < 10; ++$i) {
+            $phone = new Phone();
+            $phone->setName('Phone '.$i);
+            $phone->setQuantity(random_int(0, 100));
+            $manager->persist($phone);
+        }
+
 
         $manager->flush();
     }
