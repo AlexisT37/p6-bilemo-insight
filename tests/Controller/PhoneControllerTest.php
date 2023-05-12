@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 // use advanced test case
@@ -26,10 +27,15 @@ class PhoneControllerTest extends WebTestCase
     public function testGetAllPhones()
     {
         $client = static::createClient();
-        $client->request('GET', '/phone');
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        // dump($client->getResponse()->getContent());
 
-        $this->assertTrue(true);
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testUser = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testUser);
+
+        $client->request('GET', '/api/phone');
+        $this->assertResponseIsSuccessful();
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
 }
