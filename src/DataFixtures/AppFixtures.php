@@ -15,6 +15,11 @@ class AppFixtures extends Fixture
             $phone = new Phone();
             $phone->setName('Phone '.$i);
             $phone->setQuantity(random_int(0, 100));
+            // sets brand and model randomly
+            $brand = ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo'];
+            $model = ['A', 'B', 'C', 'D', 'E', 'F'];
+            $phone->setBrand($brand[random_int(0, 5)]);
+            $phone->setModel($model[random_int(0, 5)]);
             $manager->persist($phone);
         }
 

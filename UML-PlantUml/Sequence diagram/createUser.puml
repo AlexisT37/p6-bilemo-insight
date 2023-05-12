@@ -1,0 +1,24 @@
+@startuml createUser
+
+actor Client
+boundary UserController
+control CreateUser
+database Database
+
+Client -> UserController : Fill out user information
+UserController -> CreateUser : Check if user name exists
+CreateUser -> Database : Check user name
+Database -> CreateUser : Return user name status
+CreateUser --> UserController : User name exists or not
+
+alt User name exists
+    UserController -> Client : Display error message
+else User name does not exist
+    UserController -> CreateUser : Set attributes and create entry
+    CreateUser -> Database : Create entry
+    Database -> CreateUser : Entry created
+    CreateUser -> UserController : Entry creation status
+    UserController -> Client : Display validation message
+end
+
+@enduml
