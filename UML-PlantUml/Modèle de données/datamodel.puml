@@ -8,6 +8,9 @@ table(Client, "Client") {
   primary_key(id): int
   name: string
   email: string
+  +create(name: string, email: string): void
+  +update(id: int, name: string, email: string): void
+  +delete(id: int): void
 }
 
 table(Phone, "Phone") {
@@ -15,24 +18,26 @@ table(Phone, "Phone") {
   name: string
   model: string
   brand: string
+  quantity: int
+  +create(name: string, model: string, brand: string, quantity: int): void
+  +update(id: int, name: string, model: string, brand: string, quantity: int): void
+  +delete(id: int): void
 }
 
 table(User, "User") {
-  primary_key(id): int
   username: string
   email: string
   password: string
   foreign_key(client_id): Client
+  +create(username: string, email: string, password: string, client: Client): void
+  +update(id: int, username: string, email: string, password: string, client: Client): void
+  +delete(id: int): void
 }
 
-table(ClientPhone, "ClientPhone") {
-  primary_key(id): int
-  foreign_key(client_id): Client
-  foreign_key(phone_id): Phone
-}
+
 
 Client "1" -- "many" User : client_id
-Client "many" -- "many" Phone : client_id - phone_id << (ClientPhone) >>
+
 
 
 @enduml

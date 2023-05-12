@@ -19,6 +19,12 @@ class Phone
     #[ORM\Column]
     private ?int $quantity = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $model = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $brand = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -44,6 +50,30 @@ class Phone
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(string $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+
+    public function getBrand(): ?string
+    {
+        return $this->brand;
+    }
+
+    public function setBrand(string $brand): self
+    {
+        $this->brand = $brand;
 
         return $this;
     }

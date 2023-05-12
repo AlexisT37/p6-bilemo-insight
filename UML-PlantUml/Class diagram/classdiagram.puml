@@ -25,8 +25,9 @@ class Phone {
   name: string
   model: string
   brand: string
-  +create(name: string, model: string, brand: string): void
-  +update(id: int, name: string, model: string, brand: string): void
+  quantity: int
+  +create(name: string, model: string, brand: string, quantity: int): void
+  +update(id: int, name: string, model: string, brand: string, quantity: int): void
   +delete(id: int): void
 }
 
