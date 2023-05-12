@@ -22,7 +22,7 @@ class PhoneController extends AbstractController
     }
 
     // Function to return all phones in the database with a JSON response
-    #[Route('/phone', name: 'app_phone', methods: ['GET'])]
+    #[Route('/api/phone', name: 'app_phone', methods: ['GET'])]
     public function getPhones(Request $request, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
         $phones = $phoneRepository->findAllWithPagination(1, 5);
