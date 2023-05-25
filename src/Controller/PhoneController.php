@@ -12,7 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class PhoneController extends AbstractController
 {
-    #[Route('/phone/test', name: 'app_test', methods: ['GET'])]
+    #[Route('/phones/test', name: 'app_test', methods: ['GET'])]
     public function index(): JsonResponse
     {
         return new JsonResponse([
@@ -22,7 +22,7 @@ class PhoneController extends AbstractController
     }
 
     // Function to return all phones in the database with a JSON response
-    #[Route('/api/phone', name: 'app_phone', methods: ['GET'])]
+    #[Route('/api/phones', name: 'app_phones', methods: ['GET'])]
     public function getPhones(Request $request, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
         $phones = $phoneRepository->findAllWithPagination(1, 5);
