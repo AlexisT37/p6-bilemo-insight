@@ -17,7 +17,7 @@ class PhoneController extends AbstractController
     {
         return new JsonResponse([
             'message' => 'Welcome to your new phone controller, this is a test!',
-            'path' => 'src/Controller/BookController.php',
+            'path' => 'src/Controller/PhoneController.php',
         ]);
     }
 

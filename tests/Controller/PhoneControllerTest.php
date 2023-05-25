@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class PhoneControllerTest extends WebTestCase
 {
-    public function testIndex()
+    public function testIndexPhones()
     {
         $client = static::createClient();
         $client->request('GET', '/phones/test');
@@ -21,7 +21,7 @@ class PhoneControllerTest extends WebTestCase
         $this->assertArrayHasKey('message', $responseData);
         $this->assertArrayHasKey('path', $responseData);
         $this->assertEquals('Welcome to your new phone controller, this is a test!', $responseData['message']);
-        $this->assertEquals('src/Controller/BookController.php', $responseData['path']);
+        $this->assertEquals('src/Controller/PhoneController.php', $responseData['path']);
     }
 
     public function testGetAllPhones()
