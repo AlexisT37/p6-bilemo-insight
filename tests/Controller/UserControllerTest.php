@@ -5,9 +5,6 @@ namespace App\Tests\Controller;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-// use advanced test case
-
-
 class UserControllerTest extends WebTestCase
 {
     public function testIndexUsers()
@@ -32,7 +29,7 @@ class UserControllerTest extends WebTestCase
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
-        $testUser = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+        $testUser = $userRepository->findOneBy(['email' => 'admin@bilemo.com']);
 
         $client->loginUser($testUser);
 
@@ -45,20 +42,24 @@ class UserControllerTest extends WebTestCase
         $responseData = json_decode($client->getResponse()->getContent(), true);
         $this->assertCount(2, $responseData);
 
-        // $brands = ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo'];
-        // $models = ['A', 'B', 'C', 'D', 'E', 'F'];
+    }
 
-        // foreach ($responseData as $phone) {
-        //     $this->assertArrayHasKey('id', $phone);
-        //     $this->assertArrayHasKey('name', $phone);
-        //     $this->assertArrayHasKey('quantity', $phone);
-        //     $this->assertArrayHasKey('model', $phone);
-        //     $this->assertArrayHasKey('brand', $phone);
 
-        //     $this->assertGreaterThanOrEqual(0, $phone['quantity']);
-        //     $this->assertLessThanOrEqual(100, $phone['quantity']);
-        //     $this->assertContains($phone['brand'], $brands);
-        //     $this->assertContains($phone['model'], $models);
-        // }
+    public function testGetAllUsersWithoutBeingAnAdmin()
+    {
+        // $this->markTestSkipped('The test to get all users has been skipped.');
+
+        $client = static::createClient();
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testUser = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testUser);
+
+        $client->request('GET', '/api/users');
+
+        $this->assertEquals(403, $client->getResponse()->getStatusCode());
+
     }
 }

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class UserController extends AbstractController
 {
@@ -21,10 +22,18 @@ class UserController extends AbstractController
         ]);
     }
 
-    // Function to return all users in the database with a JSON response
+    // Function to get all the users, only accessible by the admin
     #[Route('/api/users', name: 'app_users', methods: ['GET'])]
     public function getUsers(Request $request, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
+        // Check if the current user has admin privileges
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            // Throw an access denied exception
+            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
+            return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
+    
+        }
+
         $users = $userRepository->findAllWithPagination(1, 5);
 
         $jsonUsers = $serializer->serialize($users, 'json');
