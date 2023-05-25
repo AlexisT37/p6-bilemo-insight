@@ -22,7 +22,6 @@ class ApiLoginCheckTest extends WebTestCase
 
         $client->request('GET', '/api/phones');
 
-        $this->assertResponseIsSuccessful();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $token = static::getContainer()->get('security.token_storage')->getToken();

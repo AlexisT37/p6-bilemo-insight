@@ -34,7 +34,6 @@ class ClientControllerTest extends WebTestCase
         $client->loginUser($testClient);
 
         $client->request('GET', '/api/clients');
-        $this->assertResponseIsSuccessful();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $this->assertJson($client->getResponse()->getContent());
