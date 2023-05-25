@@ -137,4 +137,21 @@ class CustomerControllerTest extends WebTestCase
         $this->assertArrayHasKey('message', $responseData);
 
     }
+
+    public function testCreateOneCustomerAsANormalClient()
+    {
+        // $this->markTestSkipped('The test to create one client has been skipped.');
+
+        $client = static::createClient();
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testClient = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testClient);
+
+        $client->request('POST', '/api/customers', [], [], ['CONTENT_TYPE' => 'application/json'], '{"email": "journal@gmail.com", "password": "jokari892"}');
+
+        $this->assertEquals(201, $client->getResponse()->getStatusCode());
+    }
 }

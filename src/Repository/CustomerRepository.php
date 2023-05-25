@@ -66,6 +66,16 @@ class CustomerRepository extends ServiceEntityRepository
         return $qb->getQuery()->getOneOrNullResult();
     }
 
+    public function createCustomer($email, $password, $client)
+    {
+        $customer = new Customer();
+        $customer->setEmail($email);
+        $customer->setPassword($password);
+        $customer->setClient($client);
+        $this->save($customer, true);
+        return $customer;
+    }
+
 //    /**
 //     * @return Customer[] Returns an array of Customer objects
 //     */

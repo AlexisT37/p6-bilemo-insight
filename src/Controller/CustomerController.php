@@ -10,9 +10,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 
 class CustomerController extends AbstractController
 {
+    private $userPasswordHasher;
+    
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    {
+        $this->userPasswordHasher = $userPasswordHasher;
+    }
+
     #[Route('/customers/test', name: 'app_customers_test', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -41,10 +50,7 @@ class CustomerController extends AbstractController
         // use the function findAllWithPaginationForCurrentClient() to get all the customers for the current user
         $customers = $customerRepository->findAllWithPaginationForCurrentClient(1, 5, $user);
 
-        // $jsonClients = $serializer->serialize($customers, 'json');
         $jsonClients = $serializer->serialize($customers, 'json', ['groups' => 'getCustomers']);
-
-        // $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getBooks']);
 
         return new JsonResponse($jsonClients, Response::HTTP_OK, [], true);
     }
@@ -74,11 +80,45 @@ class CustomerController extends AbstractController
             return new JsonResponse(['message' => 'Unable to access this page, you are not the owner of this customer!'], Response::HTTP_FORBIDDEN);
         }
 
-        // $jsonClient = $serializer->serialize($customer, 'json');
         $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
 
-        // $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getBooks']);
-
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
+    }
+
+    // Function to create a new customer, only accessible by a logged in client
+    #[Route('/api/customers', name: 'app_customers_create', methods: ['POST'])]
+    public function createCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer): JsonResponse
+    {
+        // Check if the current user has admin privileges
+        if (!$this->isGranted('ROLE_USER')) {
+            // Throw an access denied exception
+            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
+            return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
+    
+        }
+
+        // get the current logged in user
+        // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
+        // For the creation, we use the user, not the id, because the user entity is used in the function createCustomer() in the CustomerRepository
+        // Intellephense is still not happy so we use an annotation to tell it that the user is an entity
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // get the data from the request
+        $data = json_decode($request->getContent(), true);
+
+        // get the email from the data
+
+        $email = $data['email'];
+        $password = $data['password'];
+
+        $hashedPassword = $this->userPasswordHasher->hashPassword($user, $password);
+
+        // create a new customer
+        $customer = $customerRepository->createCustomer($email, $hashedPassword, $user);
+
+        $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+
+        return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, [], true);
     }
 }
