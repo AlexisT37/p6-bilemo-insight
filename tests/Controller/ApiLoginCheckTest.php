@@ -20,7 +20,7 @@ class ApiLoginCheckTest extends WebTestCase
 
         $client->loginUser($testUser);
 
-        $client->request('GET', '/api/phone');
+        $client->request('GET', '/api/phones');
 
         $this->assertResponseIsSuccessful();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());

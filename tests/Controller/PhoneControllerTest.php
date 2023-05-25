@@ -13,7 +13,7 @@ class PhoneControllerTest extends WebTestCase
     public function testIndex()
     {
         $client = static::createClient();
-        $client->request('GET', '/phone/test');
+        $client->request('GET', '/phones/test');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
@@ -34,7 +34,7 @@ class PhoneControllerTest extends WebTestCase
 
         $client->loginUser($testUser);
 
-        $client->request('GET', '/api/phone');
+        $client->request('GET', '/api/phones');
         $this->assertResponseIsSuccessful();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
