@@ -9,22 +9,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-class UserController extends AbstractController
+class ClientController extends AbstractController
 {
-    #[Route('/users/test', name: 'app_users_test', methods: ['GET'])]
+    #[Route('/clients/test', name: 'app_clients_test', methods: ['GET'])]
     public function index(): JsonResponse
     {
         return new JsonResponse([
-            'message' => 'Welcome to your new user controller, this is a test!',
-            'path' => 'src/Controller/UserController.php',
+            'message' => 'Welcome to your new client controller, this is a test!',
+            'path' => 'src/Controller/ClientController.php',
         ]);
     }
 
-    // Function to get all the users, only accessible by the admin
-    #[Route('/api/users', name: 'app_users', methods: ['GET'])]
-    public function getUsers(Request $request, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    // Function to get all the users, which are the real users of the api, only accessible by the admin
+    #[Route('/api/clients', name: 'app_clients', methods: ['GET'])]
+    public function getClients(Request $request, UserRepository $clientRepository, SerializerInterface $serializer): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_ADMIN')) {
@@ -34,10 +33,10 @@ class UserController extends AbstractController
     
         }
 
-        $users = $userRepository->findAllWithPagination(1, 5);
+        $clients = $clientRepository->findAllWithPagination(1, 5);
 
-        $jsonUsers = $serializer->serialize($users, 'json');
+        $jsonClients = $serializer->serialize($clients, 'json');
 
-        return new JsonResponse($jsonUsers, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonClients, Response::HTTP_OK, [], true);
     }
 }

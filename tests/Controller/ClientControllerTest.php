@@ -5,35 +5,35 @@ namespace App\Tests\Controller;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class UserControllerTest extends WebTestCase
+class ClientControllerTest extends WebTestCase
 {
-    public function testIndexUsers()
+    public function testIndexClients()
     {
         $client = static::createClient();
-        $client->request('GET', '/users/test');
+        $client->request('GET', '/clients/test');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
         $responseData = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('message', $responseData);
         $this->assertArrayHasKey('path', $responseData);
-        $this->assertEquals('Welcome to your new user controller, this is a test!', $responseData['message']);
-        $this->assertEquals('src/Controller/UserController.php', $responseData['path']);
+        $this->assertEquals('Welcome to your new client controller, this is a test!', $responseData['message']);
+        $this->assertEquals('src/Controller/ClientController.php', $responseData['path']);
     }
 
-    public function testGetAllUsers()
+    public function testGetAllClients()
     {
-        // $this->markTestSkipped('The test to get all users has been skipped.');
+        // $this->markTestSkipped('The test to get all clients has been skipped.');
 
         $client = static::createClient();
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
-        $testUser = $userRepository->findOneBy(['email' => 'admin@bilemo.com']);
+        $testClient = $userRepository->findOneBy(['email' => 'admin@bilemo.com']);
 
-        $client->loginUser($testUser);
+        $client->loginUser($testClient);
 
-        $client->request('GET', '/api/users');
+        $client->request('GET', '/api/clients');
         $this->assertResponseIsSuccessful();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
@@ -45,19 +45,19 @@ class UserControllerTest extends WebTestCase
     }
 
 
-    public function testGetAllUsersWithoutBeingAnAdmin()
+    public function testGetAllClientsWithoutBeingAnAdmin()
     {
         // $this->markTestSkipped('The test to get all users has been skipped.');
 
         $client = static::createClient();
 
-        $userRepository = static::getContainer()->get(UserRepository::class);
+        $clientRepository = static::getContainer()->get(UserRepository::class);
 
-        $testUser = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+        $testClient = $clientRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
 
-        $client->loginUser($testUser);
+        $client->loginUser($testClient);
 
-        $client->request('GET', '/api/users');
+        $client->request('GET', '/api/clients');
 
         $this->assertEquals(403, $client->getResponse()->getStatusCode());
 
