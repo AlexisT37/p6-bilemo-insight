@@ -39,6 +39,33 @@ class CustomerRepository extends ServiceEntityRepository
         }
     }
 
+    public function findAllWithPagination($page, $limit) {
+        $qb = $this->createQueryBuilder('b')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findAllWithPaginationForCurrentClient($page, $limit, $client)
+    {
+        $qb = $this->createQueryBuilder('b')
+            ->andWhere('b.client = :client')
+            ->setParameter('client', $client)
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findOneByIdForCurrentClient($id, $client)
+    {
+        $qb = $this->createQueryBuilder('b')
+            ->andWhere('b.client = :client')
+            ->andWhere('b.id = :id')
+            ->setParameter('client', $client)
+            ->setParameter('id', $id);
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
 //    /**
 //     * @return Customer[] Returns an array of Customer objects
 //     */

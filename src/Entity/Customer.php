@@ -12,14 +12,15 @@ class Customer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getCustomers"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getClients"])]
+    #[Groups(["getClients", "getCustomer", "getCustomers"])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getClients"])]
+    #[Groups(["getClients", "getCustomer", "getCustomers"])]
     private ?string $password = null;
 
     #[ORM\ManyToOne(inversedBy: 'customers')]
