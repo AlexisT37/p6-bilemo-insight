@@ -25,7 +25,12 @@ class PhoneController extends AbstractController
     #[Route('/api/phones', name: 'app_phones', methods: ['GET'])]
     public function getPhones(Request $request, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
-        $phones = $phoneRepository->findAllWithPagination(1, 5);
+        // extract the page number and limit from the request body
+        $content = json_decode($request->getContent(), true);
+        $page = $content['page'] ?? 1;
+        $limit = $content['limit'] ?? 10;
+
+        $phones = $phoneRepository->findAllWithPagination($page, $limit);
 
         $jsonPhones = $serializer->serialize($phones, 'json');
 

@@ -74,8 +74,8 @@ class AppFixtures extends Fixture
         $customer5->setClient($userAdmin);
         $manager->persist($customer5);
 
-        //creates 10 phones with random data according to the Phone entity
-        for ($i = 0; $i < 10; ++$i) {
+        //creates 30 phones with random data according to the Phone entity
+        for ($i = 0; $i < 30; ++$i) {
             $phone = new Phone();
             $phone->setName('Phone '.$i);
             $phone->setQuantity(random_int(0, 100));

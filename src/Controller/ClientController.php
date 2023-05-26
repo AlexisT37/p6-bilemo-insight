@@ -33,7 +33,13 @@ class ClientController extends AbstractController
     
         }
 
-        $clients = $clientRepository->findAllWithPagination(1, 5);
+        // extract the page number and limit from the request body
+        $content = json_decode($request->getContent(), true);
+        $page = $content['page'] ?? 1;
+        $limit = $content['limit'] ?? 10;
+
+        $clients = $clientRepository->findAllWithPagination($page, $limit);
+
 
         $jsonClients = $serializer->serialize($clients, 'json', ['groups' => 'getClients']);
 
