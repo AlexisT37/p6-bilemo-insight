@@ -31,7 +31,6 @@ class PhoneControllerTest extends WebTestCase
 
         $client->loginUser($testUser);
 
-        // $client->request('GET', '/api/phones');
         $client->request('GET', '/api/phones', [], [], ['CONTENT_TYPE' => 'application/json'], '{"page": 2, "limit": 10}');
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
