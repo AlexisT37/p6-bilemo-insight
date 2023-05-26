@@ -43,12 +43,17 @@ class CustomerController extends AbstractController
     
         }
 
+        // extract the page number and limit from the request body
+        $content = json_decode($request->getContent(), true);
+        $page = $content['page'] ?? 1;
+        $limit = $content['limit'] ?? 10;
+
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
 
         // use the function findAllWithPaginationForCurrentClient() to get all the customers for the current user
-        $customers = $customerRepository->findAllWithPaginationForCurrentClient(1, 5, $user);
+        $customers = $customerRepository->findAllWithPaginationForCurrentClient($page, $limit, $user);
 
         $jsonClients = $serializer->serialize($customers, 'json', ['groups' => 'getCustomers']);
 
