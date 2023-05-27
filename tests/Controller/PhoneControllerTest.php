@@ -55,4 +55,41 @@ class PhoneControllerTest extends WebTestCase
             $this->assertContains($phone['model'], $models);
         }
     }
+
+
+    public function testGetPhone()
+    {
+        $client = static::createClient();
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testUser = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testUser);
+
+        // Make a GET request to the /api/phones/{id} endpoint with an ID of 1
+        $client->request('GET', '/api/phones/1');
+
+        // Assert that the response status code is 200 OK
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        // Assert that the response content type is JSON
+        $this->assertTrue($client->getResponse()->headers->contains('Content-Type', 'application/json'));
+
+        $phone = json_decode($client->getResponse()->getContent(), true);
+
+        $brands = ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo'];
+        $models = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+            $this->assertArrayHasKey('id', $phone);
+            $this->assertArrayHasKey('name', $phone);
+            $this->assertArrayHasKey('quantity', $phone);
+            $this->assertArrayHasKey('model', $phone);
+            $this->assertArrayHasKey('brand', $phone);
+
+            $this->assertGreaterThanOrEqual(0, $phone['quantity']);
+            $this->assertLessThanOrEqual(100, $phone['quantity']);
+            $this->assertContains($phone['brand'], $brands);
+            $this->assertContains($phone['model'], $models);
+    }
 }
