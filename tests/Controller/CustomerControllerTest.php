@@ -8,9 +8,38 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CustomerControllerTest extends WebTestCase
 {
-    public function testIndexClients()
+
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+    private $client;
+
+    // Function to set up the tests so that the database is not modified after each test
+    public function setUp(): void
     {
-        $client = static::createClient();
+        parent::setUp();
+
+        $this->client = static::createClient();
+        $container = self::$kernel->getContainer();
+        $this->entityManager = $container->get('doctrine')->getManager();
+        $this->entityManager->beginTransaction();
+        $this->entityManager->getConnection()->setAutoCommit(false);
+
+    }
+
+    public function tearDown(): void
+    {
+        $this->entityManager->rollback();
+        $this->entityManager->close();
+        $this->entityManager = null; // avoid memory leaks
+
+        parent::tearDown();
+    }
+
+    public function testIndexCustomers()
+    {
+        $client = $this->client;
         $client->request('GET', '/customers/test');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
@@ -26,7 +55,7 @@ class CustomerControllerTest extends WebTestCase
     {
         // $this->markTestSkipped('The test to get all clients has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -48,7 +77,7 @@ class CustomerControllerTest extends WebTestCase
     {
         // $this->markTestSkipped('The test to get all clients has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -71,7 +100,7 @@ class CustomerControllerTest extends WebTestCase
     {
         // $this->markTestSkipped('The test to get one client has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -95,7 +124,7 @@ class CustomerControllerTest extends WebTestCase
     {
         // $this->markTestSkipped('The test to get one client has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -120,7 +149,7 @@ class CustomerControllerTest extends WebTestCase
     {
         // $this->markTestSkipped('The test to get one client has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -142,9 +171,9 @@ class CustomerControllerTest extends WebTestCase
 
     public function testCreateOneCustomerAsANormalClient()
     {
-        $this->markTestSkipped('The test to create one client has been skipped.');
+        // $this->markTestSkipped('The test to create one client has been skipped.');
 
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -159,7 +188,7 @@ class CustomerControllerTest extends WebTestCase
 
     public function testUpdateCustomer()
     {
-        $client = static::createClient();
+        $client = $this->client;
 
         $userRepository = static::getContainer()->get(UserRepository::class);
 
