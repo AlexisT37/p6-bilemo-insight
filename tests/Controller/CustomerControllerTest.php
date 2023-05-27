@@ -3,6 +3,7 @@
 namespace App\Tests\Controller;
 
 use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CustomerControllerTest extends WebTestCase
@@ -154,5 +155,27 @@ class CustomerControllerTest extends WebTestCase
         $client->request('POST', '/api/customers', [], [], ['CONTENT_TYPE' => 'application/json'], '{"email": "journal@gmail.com", "password": "jokari892"}');
 
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
+    }
+
+    public function testUpdateCustomer()
+    {
+        $client = static::createClient();
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testClient = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testClient);
+
+        // Update the customer with id 1, with a new email and password
+        $client->request('PUT', '/api/customers/1', [], [],
+            ['CONTENT_TYPE' => 'application/json'], '{"email":"newemail@example.com","password":"newpassword"}');
+
+        // Check that the response is successful
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        // Check that the customer was updated correctly
+        $customer = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals('newemail@example.com', $customer['email']);
     }
 }

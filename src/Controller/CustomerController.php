@@ -126,4 +126,45 @@ class CustomerController extends AbstractController
 
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, [], true);
     }
+
+    // Function to update a customer, only accessible by a logged in client
+    #[Route('/api/customers/{id}', name: 'app_customers_update', methods: ['PUT'])]
+    public function updateCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    {
+        // Check if the current user has admin privileges
+        if (!$this->isGranted('ROLE_USER')) {
+            return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
+        }
+
+        // get the current logged in user
+        // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
+        // For the creation, we use the user, not the id, because the user entity is used in the function createCustomer() in the CustomerRepository
+        // Intellephense is still not happy so we use an annotation to tell it that the user is an entity
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // use the function findOneByIdForCurrentClient() to get the customer for the current user
+        $customer = $customerRepository->findOneByIdForCurrentClient($id, $user);
+
+        // if $customer is null, return a 403 forbidden response
+        if ($customer === null) {
+            return new JsonResponse(['message' => 'Unable to access this page, you are not the owner of this customer!'], Response::HTTP_FORBIDDEN);
+        }
+
+        // get the data from the request
+        $data = json_decode($request->getContent(), true);
+
+        $hashedPassword = $this->userPasswordHasher->hashPassword($user, $data['password']);
+
+        // update the customer with the new data
+        $customer->setEmail($data['email']);
+        $customer->setPassword($hashedPassword);
+
+        // save the updated customer to the database
+        $customerRepository->save($customer, true);
+
+        $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+
+        return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
+    }
 }
