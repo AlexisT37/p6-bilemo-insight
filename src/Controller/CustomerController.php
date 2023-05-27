@@ -80,9 +80,12 @@ class CustomerController extends AbstractController
         // use the function findOneByIdForCurrentClient() to get the customer for the current user
         $customer = $customerRepository->findOneByIdForCurrentClient($id, $user);
 
+        
+
         // if $customer is null, return a 403 forbidden response
         if ($customer === null) {
-            return new JsonResponse(['message' => 'Unable to access this page, you are not the owner of this customer!'], Response::HTTP_FORBIDDEN);
+            // return a not found response with a message that the customer was not found or deleted
+            return new JsonResponse(['message' => 'Customer not found, either it is not yours or it was deleted'], Response::HTTP_NOT_FOUND);
         }
 
         $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
@@ -166,5 +169,36 @@ class CustomerController extends AbstractController
         $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
 
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
+    }
+
+    // Function to delete a customer, only accessible by a logged in client
+    #[Route('/api/customers/{id}', name: 'app_customers_delete', methods: ['DELETE'])]
+    public function deleteCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    {
+        // Check if the current user has admin privileges
+        if (!$this->isGranted('ROLE_USER')) {
+            return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
+        }
+
+        // get the current logged in user
+        // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
+        // For the creation, we use the user, not the id, because the user entity is used in the function createCustomer() in the CustomerRepository
+        // Intellephense is still not happy so we use an annotation to tell it that the user is an entity
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // use the function findOneByIdForCurrentClient() to get the customer for the current user
+        $customer = $customerRepository->findOneByIdForCurrentClient($id, $user);
+
+        // if $customer is null, return a 403 forbidden response
+        if ($customer === null) {
+            return new JsonResponse(['message' => 'Unable to access this page, you are not the owner of this customer!'], Response::HTTP_FORBIDDEN);
+        }
+
+        // delete the customer
+        $customerRepository->remove($customer, true);
+
+        return new JsonResponse(['message' => 'Customer deleted'], Response::HTTP_OK);
+
     }
 }
