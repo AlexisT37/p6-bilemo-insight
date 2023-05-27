@@ -5,12 +5,9 @@ namespace App\Tests\Controller;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-// use advanced test case
-
-
 class PhoneControllerTest extends WebTestCase
 {
-    public function testIndex()
+    public function testIndexPhones()
     {
         $client = static::createClient();
         $client->request('GET', '/phones/test');
@@ -21,7 +18,7 @@ class PhoneControllerTest extends WebTestCase
         $this->assertArrayHasKey('message', $responseData);
         $this->assertArrayHasKey('path', $responseData);
         $this->assertEquals('Welcome to your new phone controller, this is a test!', $responseData['message']);
-        $this->assertEquals('src/Controller/BookController.php', $responseData['path']);
+        $this->assertEquals('src/Controller/PhoneController.php', $responseData['path']);
     }
 
     public function testGetAllPhones()
@@ -34,14 +31,13 @@ class PhoneControllerTest extends WebTestCase
 
         $client->loginUser($testUser);
 
-        $client->request('GET', '/api/phones');
-        $this->assertResponseIsSuccessful();
+        $client->request('GET', '/api/phones', [], [], ['CONTENT_TYPE' => 'application/json'], '{"page": 2, "limit": 10}');
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $this->assertJson($client->getResponse()->getContent());
 
         $responseData = json_decode($client->getResponse()->getContent(), true);
-        $this->assertCount(5, $responseData);
+        $this->assertCount(10, $responseData);
 
         $brands = ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo'];
         $models = ['A', 'B', 'C', 'D', 'E', 'F'];
