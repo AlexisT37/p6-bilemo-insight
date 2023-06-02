@@ -21,18 +21,20 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *      "delete",
  *      href = @Hateoas\Route(
  *          "app_customers_delete",
- *          parameters = { "id" = "expr(object.getId())" },
+ *          parameters = { "id" = "expr(object.getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
+ *      attributes = { "method" = "DELETE" },
+ *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_USER'))")
  * )
  *
  * @Hateoas\Relation(
  *      "update",
  *      href = @Hateoas\Route(
  *          "app_customers_update",
- *          parameters = { "id" = "expr(object.getId())" },
+ *          parameters = { "id" = "expr(object.getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
+ *      attributes = { "method" = "PUT" },
+ *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_USER'))")
  * )
  */
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
