@@ -38,8 +38,6 @@ class ClientController extends AbstractController
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_ADMIN')) {
-            // Throw an access denied exception
-            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
             return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
     
         }
@@ -53,7 +51,6 @@ class ClientController extends AbstractController
 
         $idCache = "getAllClients_{$page}_{$limit}";
 
-        // $clients = $clientRepository->findAllWithPagination($page, $limit);
         $clientList = $cache->get($idCache, function (ItemInterface $item) use ($clientRepository, $page, $limit) {
             $this->logger->info("Cache miss for the client list with page {$page} and limit {$limit}");
             $item->tag('clients');
@@ -73,8 +70,6 @@ class ClientController extends AbstractController
 
          // Check if the current user has admin privileges
          if (!$this->isGranted('ROLE_ADMIN')) {
-            // Throw an access denied exception
-            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
             return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
         }
 
