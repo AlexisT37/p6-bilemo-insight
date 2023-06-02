@@ -73,7 +73,7 @@ class CustomerController extends AbstractController
 
     // Function to get a specific user, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_id', methods: ['GET'])]
-    public function getCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    public function getCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -88,11 +88,15 @@ class CustomerController extends AbstractController
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
 
+        dump($user);
 
-        // use the function findOneByIdForCurrentClient() to get the customer for the current user
-        $customer = $customerRepository->findOneByIdForCurrentClient($id, $user);
+        $idCache = "getCustomer_{$id}";
 
-        
+        $customer = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $id, $user) {
+            $this->logger->info("Cache miss for the customer with id {$id}");
+            $item->tag('customer');
+            return $customerRepository->findOneByIdForCurrentClient($id, $user);
+        });
 
         // if $customer is null, return a 403 forbidden response
         if ($customer === null) {
@@ -102,7 +106,7 @@ class CustomerController extends AbstractController
 
         $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
-        return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonCustomer, Response::HTTP_OK, ['json_encode_options' => JSON_PRETTY_PRINT], true);
     }
 
     // Function to create a new customer, only accessible by a logged in client
