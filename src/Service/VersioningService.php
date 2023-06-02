@@ -31,21 +31,24 @@ class VersioningService
      * @return string : le numéro de la version. Par défaut, la version retournée est celle définie dans le fichier de configuration services.yaml : "default_api_version"
      */
     public function getVersion(): string
-    {  
+    {
         $version = $this->defaultVersion;
- 
+
         $request = $this->requestStack->getCurrentRequest();
         $accept = $request->headers->get('Accept');
-        // Récupération du numéro de version dans la chaîne  de caractères du accept :
-        // exemple "application/json; test=bidule; version=2.0" => 2.0
-        $entete = explode(';', $accept);
-       
-        // On parcours toutes les entêtes pour trouver la version
-        foreach ($entete as $value) {
-            if (strpos($value, 'version') !== false) {
-                $version = explode('=', $value);
-                $version = $version[1];
-                break;
+
+        if ($accept !== null) {
+            // Récupération du numéro de version dans la chaîne  de caractères du accept :
+            // exemple "application/json; test=bidule; version=2.0" => 2.0
+            $entete = explode(';', $accept);
+
+            // On parcours toutes les entêtes pour trouver la version
+            foreach ($entete as $value) {
+                if (strpos($value, 'version') !== false) {
+                    $version = explode('=', $value);
+                    $version = $version[1];
+                    break;
+                }
             }
         }
         return $version;

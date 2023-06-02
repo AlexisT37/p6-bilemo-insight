@@ -28,6 +28,10 @@ class CustomerControllerTest extends WebTestCase
         $this->entityManager->beginTransaction();
         $this->entityManager->getConnection()->setAutoCommit(false);
 
+        // cache clearing
+        $cache = static::getContainer()->get('cache.app');
+        $cache->clear();
+
     }
 
     public function tearDown(): void
@@ -37,6 +41,10 @@ class CustomerControllerTest extends WebTestCase
         }
         $this->entityManager->close();
         $this->entityManager = null; // avoid memory leaks
+
+        // cache clearing
+        $cache = static::getContainer()->get('cache.app');
+        $cache->clear();
 
         parent::tearDown();
     }
@@ -67,14 +75,13 @@ class CustomerControllerTest extends WebTestCase
 
         $client->loginUser($testClient);
 
-        $client->request('GET', '/api/customers');
+        $client->request('GET', '/api/customers?page=1&limit=10', [], [], ['CONTENT_TYPE' => 'application/json']);
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $this->assertJson($client->getResponse()->getContent());
 
         $responseData = json_decode($client->getResponse()->getContent(), true);
         $this->assertCount(3, $responseData);
-
     }
 
     public function testGetAllCustomersOfTheNormalClient()
@@ -121,6 +128,37 @@ class CustomerControllerTest extends WebTestCase
         $responseData = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertArrayHasKey('email', $responseData);
+        $this->assertArrayNotHasKey('password', $responseData);
+        
+    }
+
+    public function testGetOneCustomerOfTheAdminClientInV2()
+    {
+        // $this->markTestSkipped('The test to get one client has been skipped.');
+
+        $client = $this->client;
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testClient = $userRepository->findOneBy(['email' => 'admin@bilemo.com']);
+
+        $client->loginUser($testClient);
+
+        // $client->request('GET', '/api/customers/3');
+
+        $client->request('GET', '/api/customers/3', [], [], [
+            'HTTP_ACCEPT' => 'application/json; version=2.0',
+        ]);
+        
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $this->assertJson($client->getResponse()->getContent());
+
+        $responseData = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('email', $responseData);
+
         $this->assertArrayHasKey('password', $responseData);
     }
 
@@ -137,6 +175,33 @@ class CustomerControllerTest extends WebTestCase
         $client->loginUser($testClient);
 
         $client->request('GET', '/api/customers/1');
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $this->assertJson($client->getResponse()->getContent());
+
+        $responseData = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('email', $responseData);
+        $this->assertArrayNotHasKey('password', $responseData);
+
+    }
+    
+    public function testGetOneCustomerOfTheNormalClientInV2()
+    {
+        // $this->markTestSkipped('The test to get one client has been skipped.');
+
+        $client = $this->client;
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $testClient = $userRepository->findOneBy(['email' => 'margesimpson@bilemo.com']);
+
+        $client->loginUser($testClient);
+
+        $client->request('GET', '/api/customers/2', [], [], [
+            'HTTP_ACCEPT' => 'application/json; version=2.0',
+        ]);
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 

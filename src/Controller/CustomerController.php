@@ -65,10 +65,10 @@ class CustomerController extends AbstractController
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
 
-        $customerList = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $page, $limit) {
+        $customerList = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $page, $limit, $user) {
             $this->logger->info("Cache miss for the customer list with page {$page} and limit {$limit}");
             $item->tag('customers');
-            return $customerRepository->findAllWithPagination($page, $limit);
+            return $customerRepository->findAllWithPaginationForCurrentClient($page, $limit, $user);
         });
 
         $jsonCustomers = $serializer->serialize($customerList, 'json', $context);
