@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Repository\CustomerRepository;
 use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
-use App\Repository\UserRepository;
+use App\Service\VersioningService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,17 +38,22 @@ class CustomerController extends AbstractController
 
     // Function to get all the users, which are the real users of the api, only accessible by the admin
     #[Route('/api/customers', name: 'app_customers', methods: ['GET'])]
-    public function getCustomers(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
+    public function getCustomers(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache, VersioningService $versioningService): JsonResponse
     {
+
+        
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
             // Throw an access denied exception
             // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
             return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
-    
         }
 
+        $version = $versioningService->getVersion();
+
         $context = SerializationContext::create()->setGroups(['getCustomers']);
+
+        $context->setVersion($version);
 
         // extract the page number and limit from url parameters
         $page = $request->query->get('page', 1);
@@ -73,7 +78,7 @@ class CustomerController extends AbstractController
 
     // Function to get a specific user, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_id', methods: ['GET'])]
-    public function getCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
+    public function getCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache, VersioningService $versioningService): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -83,12 +88,15 @@ class CustomerController extends AbstractController
     
         }
 
+        $version = $versioningService->getVersion();
+
         $context = SerializationContext::create()->setGroups(['getCustomer']);
+
+        $context->setVersion($version);
+        
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
-
-        dump($user);
 
         $idCache = "getCustomer_{$id}";
 
@@ -111,7 +119,7 @@ class CustomerController extends AbstractController
 
     // Function to create a new customer, only accessible by a logged in client
     #[Route('/api/customers', name: 'app_customers_create', methods: ['POST'])]
-    public function createCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer): JsonResponse
+    public function createCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -143,12 +151,14 @@ class CustomerController extends AbstractController
 
         $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
+        $cache->invalidateTags(["customer", "customers"]);
+
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, [], true);
     }
 
     // Function to update a customer, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_update', methods: ['PUT'])]
-    public function updateCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    public function updateCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -186,12 +196,14 @@ class CustomerController extends AbstractController
 
         $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
+        $cache->invalidateTags(["customer", "customers"]);
+
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
     }
 
     // Function to delete a customer, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_delete', methods: ['DELETE'])]
-    public function deleteCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    public function deleteCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -215,6 +227,8 @@ class CustomerController extends AbstractController
 
         // delete the customer
         $customerRepository->remove($customer, true);
+
+        $cache->invalidateTags(["customer", "customers"]);
 
         return new JsonResponse(['message' => 'Customer deleted'], Response::HTTP_OK);
 

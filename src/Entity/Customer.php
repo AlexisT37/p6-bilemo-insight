@@ -6,6 +6,7 @@ use App\Repository\CustomerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
 use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation\Since;
 
 /**
  * @Hateoas\Relation(
@@ -73,6 +74,7 @@ class Customer
 
     #[ORM\Column(length: 255)]
     #[Groups(["getClient", "getCustomer", "getCustomers"])]
+    #[Since("2.0")]
     private ?string $password = null;
 
     #[ORM\ManyToOne(inversedBy: 'customers')]
