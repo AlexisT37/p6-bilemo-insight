@@ -29,10 +29,9 @@ class PhoneController extends AbstractController
         // Create the serialization context
         $context = SerializationContext::create()->setGroups(['getPhones']);
 
-        // extract the page number and limit from the request body
-        $content = json_decode($request->getContent(), true);
-        $page = $content['page'] ?? 1;
-        $limit = $content['limit'] ?? 10;
+        // extract the page number and limit from url parameters
+        $page = $request->query->get('page', 1);
+        $limit = $request->query->get('limit', 10);
 
         $phones = $phoneRepository->findAllWithPagination($page, $limit);
 

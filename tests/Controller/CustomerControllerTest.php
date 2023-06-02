@@ -89,8 +89,8 @@ class CustomerControllerTest extends WebTestCase
 
         $client->loginUser($testClient);
 
-        // do a request with a limit of 1 customer and page 1, not in the url but in the body of the request
-        $client->request('GET', '/api/customers', [], [], ['CONTENT_TYPE' => 'application/json'], '{"page": 1, "limit": 1}');
+        // do a request with a limit of 1 customer and page 1, in query parameters
+        $client->request('GET', '/api/customers?page=1&limit=1', [], [], ['CONTENT_TYPE' => 'application/json']);
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $this->assertJson($client->getResponse()->getContent());
