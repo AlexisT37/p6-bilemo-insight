@@ -2,16 +2,27 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Serializer\SerializerInterface;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Psr\Log\LoggerInterface;
+
 
 class ClientController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger) {
+        $this->logger = $logger;
+    }
+
     #[Route('/clients/test', name: 'app_clients_test', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -23,25 +34,63 @@ class ClientController extends AbstractController
 
     // Function to get all the users, which are the real users of the api, only accessible by the admin
     #[Route('/api/clients', name: 'app_clients', methods: ['GET'])]
-    public function getClients(Request $request, UserRepository $clientRepository, SerializerInterface $serializer): JsonResponse
+    public function getClients(Request $request, UserRepository $clientRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_ADMIN')) {
-            // Throw an access denied exception
-            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
             return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
     
         }
 
+        $context = SerializationContext::create()->setGroups(['getClients']);
+
+        
         // extract the page number and limit from url parameters
         $page = $request->query->get('page', 1);
         $limit = $request->query->get('limit', 10);
 
-        $clients = $clientRepository->findAllWithPagination($page, $limit);
+        $idCache = "getAllClients_{$page}_{$limit}";
+
+        $clientList = $cache->get($idCache, function (ItemInterface $item) use ($clientRepository, $page, $limit) {
+            $this->logger->info("Cache miss for the client list with page {$page} and limit {$limit}");
+            $item->tag('clients');
+            return $clientRepository->findAllWithPagination($page, $limit);
+        });
 
 
-        $jsonClients = $serializer->serialize($clients, 'json', ['groups' => 'getClients']);
+        $jsonClientList = $serializer->serialize($clientList, 'json', $context);
 
-        return new JsonResponse($jsonClients, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonClientList, Response::HTTP_OK, ['json_encode_options' => JSON_PRETTY_PRINT], true);
+    }
+
+    // Function to return a specific client in the database with a JSON response
+    #[Route('/api/clients/{id}', name: 'app_client', methods: ['GET'])]
+    public function getClient(int $id, UserRepository $clientRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
+    {
+
+         // Check if the current user has admin privileges
+         if (!$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Create the serialization context
+        $context = SerializationContext::create()->setGroups(['getClient']);
+
+        $idCache = "getClient_{$id}";
+
+        $client = $cache->get($idCache, function (ItemInterface $item) use ($clientRepository, $id) {
+            $this->logger->info("Cache miss for the client with id {$id}");
+            $item->tag('client');
+            return $clientRepository->find($id);
+        });
+
+        if (!$client) {
+            return new JsonResponse(['message' => 'Client not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $jsonClient = $serializer->serialize($client, 'json', $context);
+
+        return new JsonResponse($jsonClient, Response::HTTP_OK, ['json_encode_options' => JSON_PRETTY_PRINT], true);
+
     }
 }
