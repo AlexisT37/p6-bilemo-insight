@@ -88,8 +88,6 @@ class CustomerController extends AbstractController
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
 
-        dump($user);
-
         $idCache = "getCustomer_{$id}";
 
         $customer = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $id, $user) {
@@ -111,7 +109,7 @@ class CustomerController extends AbstractController
 
     // Function to create a new customer, only accessible by a logged in client
     #[Route('/api/customers', name: 'app_customers_create', methods: ['POST'])]
-    public function createCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer): JsonResponse
+    public function createCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -143,12 +141,14 @@ class CustomerController extends AbstractController
 
         $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
+        $cache->invalidateTags(["customer", "customers"]);
+
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, [], true);
     }
 
     // Function to update a customer, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_update', methods: ['PUT'])]
-    public function updateCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    public function updateCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -186,12 +186,14 @@ class CustomerController extends AbstractController
 
         $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
+        $cache->invalidateTags(["customer", "customers"]);
+
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
     }
 
     // Function to delete a customer, only accessible by a logged in client
     #[Route('/api/customers/{id}', name: 'app_customers_delete', methods: ['DELETE'])]
-    public function deleteCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id): JsonResponse
+    public function deleteCustomer(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, $id, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -215,6 +217,8 @@ class CustomerController extends AbstractController
 
         // delete the customer
         $customerRepository->remove($customer, true);
+
+        $cache->invalidateTags(["customer", "customers"]);
 
         return new JsonResponse(['message' => 'Customer deleted'], Response::HTTP_OK);
 
