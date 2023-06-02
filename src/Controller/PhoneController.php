@@ -47,7 +47,6 @@ class PhoneController extends AbstractController
 
 
         $phoneList = $cache->get($idCache, function (ItemInterface $item) use ($phoneRepository, $page, $limit) {
-            // echo ("Cache miss for the phone list with page {$page} and limit {$limit}");
             $this->logger->info("Cache miss for the phone list with page {$page} and limit {$limit}");
             $item->tag('phones');
             return $phoneRepository->findAllWithPagination($page, $limit);
