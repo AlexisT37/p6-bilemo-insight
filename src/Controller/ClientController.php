@@ -70,6 +70,14 @@ class ClientController extends AbstractController
     #[Route('/api/clients/{id}', name: 'app_client', methods: ['GET'])]
     public function getClient(int $id, UserRepository $clientRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
     {
+
+         // Check if the current user has admin privileges
+         if (!$this->isGranted('ROLE_ADMIN')) {
+            // Throw an access denied exception
+            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
+            return new JsonResponse(['message' => 'Unable to access this page, you are not an admin!'], Response::HTTP_FORBIDDEN);
+        }
+
         // Create the serialization context
         $context = SerializationContext::create()->setGroups(['getClient']);
 

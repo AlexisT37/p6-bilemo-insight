@@ -45,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Customer::class)]
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Customer::class, fetch: 'EAGER')]
     #[Groups(["getClient"])]
     private Collection $customers;
 
