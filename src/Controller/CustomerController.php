@@ -12,15 +12,19 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Psr\Log\LoggerInterface;
 
 class CustomerController extends AbstractController
 {
+    private $logger;
     private $userPasswordHasher;
     
-    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher, LoggerInterface $logger)
     {
         $this->userPasswordHasher = $userPasswordHasher;
+        $this->logger = $logger;
     }
 
     #[Route('/customers/test', name: 'app_customers_test', methods: ['GET'])]
@@ -34,7 +38,7 @@ class CustomerController extends AbstractController
 
     // Function to get all the users, which are the real users of the api, only accessible by the admin
     #[Route('/api/customers', name: 'app_customers', methods: ['GET'])]
-    public function getCustomers(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer): JsonResponse
+    public function getCustomers(Request $request, CustomerRepository $customerRepository, SerializerInterface $serializer, TagAwareCacheInterface $cache): JsonResponse
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
@@ -50,16 +54,21 @@ class CustomerController extends AbstractController
         $page = $request->query->get('page', 1);
         $limit = $request->query->get('limit', 10);
 
+        $idCache = "getAllCustomers_{$page}_{$limit}";
+
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
 
-        // use the function findAllWithPaginationForCurrentClient() to get all the customers for the current user
-        $customers = $customerRepository->findAllWithPaginationForCurrentClient($page, $limit, $user);
+        $customerList = $cache->get($idCache, function (ItemInterface $item) use ($customerRepository, $page, $limit) {
+            $this->logger->info("Cache miss for the customer list with page {$page} and limit {$limit}");
+            $item->tag('customers');
+            return $customerRepository->findAllWithPagination($page, $limit);
+        });
 
-        $jsonClients = $serializer->serialize($customers, 'json', $context);
+        $jsonCustomers = $serializer->serialize($customerList, 'json', $context);
 
-        return new JsonResponse($jsonClients, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonCustomers, Response::HTTP_OK, ['json_encode_options' => JSON_PRETTY_PRINT], true);
     }
 
     // Function to get a specific user, only accessible by a logged in client
@@ -102,10 +111,7 @@ class CustomerController extends AbstractController
     {
         // Check if the current user has admin privileges
         if (!$this->isGranted('ROLE_USER')) {
-            // Throw an access denied exception
-            // throw new AccessDeniedException('Unable to access this page, you are not an admin!');
             return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
-    
         }
 
 
