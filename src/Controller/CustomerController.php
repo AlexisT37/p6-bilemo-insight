@@ -3,7 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\CustomerRepository;
-use Symfony\Component\Serializer\SerializerInterface;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +44,8 @@ class CustomerController extends AbstractController
     
         }
 
+        $context = SerializationContext::create()->setGroups(['getCustomers']);
+
         // extract the page number and limit from the request body
         $content = json_decode($request->getContent(), true);
         $page = $content['page'] ?? 1;
@@ -55,7 +58,7 @@ class CustomerController extends AbstractController
         // use the function findAllWithPaginationForCurrentClient() to get all the customers for the current user
         $customers = $customerRepository->findAllWithPaginationForCurrentClient($page, $limit, $user);
 
-        $jsonClients = $serializer->serialize($customers, 'json', ['groups' => 'getCustomers']);
+        $jsonClients = $serializer->serialize($customers, 'json', $context);
 
         return new JsonResponse($jsonClients, Response::HTTP_OK, [], true);
     }
@@ -72,6 +75,7 @@ class CustomerController extends AbstractController
     
         }
 
+        $context = SerializationContext::create()->setGroups(['getCustomer']);
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
         $user = $this->getUser()->getId();
@@ -88,7 +92,7 @@ class CustomerController extends AbstractController
             return new JsonResponse(['message' => 'Customer not found, either it is not yours or it was deleted'], Response::HTTP_NOT_FOUND);
         }
 
-        $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+        $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
     }
@@ -104,6 +108,9 @@ class CustomerController extends AbstractController
             return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
     
         }
+
+
+        $context = SerializationContext::create()->setGroups(['getCustomer']);
 
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
@@ -125,7 +132,7 @@ class CustomerController extends AbstractController
         // create a new customer
         $customer = $customerRepository->createCustomer($email, $hashedPassword, $user);
 
-        $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+        $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, [], true);
     }
@@ -138,6 +145,8 @@ class CustomerController extends AbstractController
         if (!$this->isGranted('ROLE_USER')) {
             return new JsonResponse(['message' => 'Unable to access this page, you are not a client!'], Response::HTTP_FORBIDDEN);
         }
+
+        $context = SerializationContext::create()->setGroups(['getCustomer']);
 
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
@@ -166,7 +175,7 @@ class CustomerController extends AbstractController
         // save the updated customer to the database
         $customerRepository->save($customer, true);
 
-        $jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+        $jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
         return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
     }

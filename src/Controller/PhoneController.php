@@ -2,8 +2,9 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Serializer\SerializerInterface;
 use App\Repository\PhoneRepository;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,6 +26,9 @@ class PhoneController extends AbstractController
     #[Route('/api/phones', name: 'app_phones', methods: ['GET'])]
     public function getPhones(Request $request, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
+        // Create the serialization context
+        $context = SerializationContext::create()->setGroups(['getPhones']);
+
         // extract the page number and limit from the request body
         $content = json_decode($request->getContent(), true);
         $page = $content['page'] ?? 1;
@@ -32,7 +36,7 @@ class PhoneController extends AbstractController
 
         $phones = $phoneRepository->findAllWithPagination($page, $limit);
 
-        $jsonPhones = $serializer->serialize($phones, 'json');
+        $jsonPhones = $serializer->serialize($phones, 'json', $context);
 
         return new JsonResponse($jsonPhones, Response::HTTP_OK, [], true);
     }
@@ -41,13 +45,16 @@ class PhoneController extends AbstractController
     #[Route('/api/phones/{id}', name: 'app_phone', methods: ['GET'])]
     public function getPhone(int $id, PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
     {
+        // Create the serialization context
+        $context = SerializationContext::create()->setGroups(['getPhone']);
+
         $phone = $phoneRepository->find($id);
 
         if (!$phone) {
             return new JsonResponse(['message' => 'Phone not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $jsonPhone = $serializer->serialize($phone, 'json');
+        $jsonPhone = $serializer->serialize($phone, 'json', $context);
 
         return new JsonResponse($jsonPhone, Response::HTTP_OK, [], true);
     }
