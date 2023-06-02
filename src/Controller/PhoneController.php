@@ -52,7 +52,7 @@ class PhoneController extends AbstractController
             return $phoneRepository->findAllWithPagination($page, $limit);
         });
 
-        $jsonPhoneList = $serializer->serialize($phoneList, 'json');
+        $jsonPhoneList = $serializer->serialize($phoneList, 'json', $context);
 
         return new JsonResponse($jsonPhoneList, Response::HTTP_OK, ['json_encode_options' => JSON_PRETTY_PRINT], true);
     }
