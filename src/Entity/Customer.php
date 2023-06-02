@@ -36,6 +36,27 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *      attributes = { "method" = "PUT" },
  *      exclusion = @Hateoas\Exclusion(groups="getCustomers", excludeIf = "expr(not is_granted('ROLE_USER'))")
  * )
+ *
+ * 
+ * @Hateoas\Relation(
+ *      "delete",
+ *      href = @Hateoas\Route(
+ *          "app_customers_delete",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      attributes = { "method" = "DELETE" },
+ *      exclusion = @Hateoas\Exclusion(groups="getCustomer", excludeIf = "expr(not is_granted('ROLE_USER'))")
+ * )
+ *
+ * @Hateoas\Relation(
+ *      "update",
+ *      href = @Hateoas\Route(
+ *          "app_customers_update",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      attributes = { "method" = "PUT" },
+ *      exclusion = @Hateoas\Exclusion(groups="getCustomer", excludeIf = "expr(not is_granted('ROLE_USER'))")
+ * )
  */
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
