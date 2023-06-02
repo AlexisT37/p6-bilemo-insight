@@ -46,10 +46,9 @@ class CustomerController extends AbstractController
 
         $context = SerializationContext::create()->setGroups(['getCustomers']);
 
-        // extract the page number and limit from the request body
-        $content = json_decode($request->getContent(), true);
-        $page = $content['page'] ?? 1;
-        $limit = $content['limit'] ?? 10;
+        // extract the page number and limit from url parameters
+        $page = $request->query->get('page', 1);
+        $limit = $request->query->get('limit', 10);
 
         // get the current logged in user
         // The potential intellephense error is not an error, it is a bug in the intellephense extension that falsely interpret the user as the UserInterface but it is the User entity which indeed has the getId() method
