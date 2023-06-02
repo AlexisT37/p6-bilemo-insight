@@ -12,9 +12,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Psr\Log\LoggerInterface;
 
 class PhoneController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger) {
+        $this->logger = $logger;
+    }
+
     #[Route('/phones/test', name: 'app_test', methods: ['GET'])]
     public function index(): JsonResponse
     {
@@ -41,6 +48,7 @@ class PhoneController extends AbstractController
 
         $phoneList = $cache->get($idCache, function (ItemInterface $item) use ($phoneRepository, $page, $limit) {
             // echo ("Cache miss for the phone list with page {$page} and limit {$limit}");
+            $this->logger->info("Cache miss for the phone list with page {$page} and limit {$limit}");
             $item->tag('phones');
             return $phoneRepository->findAllWithPagination($page, $limit);
         });
